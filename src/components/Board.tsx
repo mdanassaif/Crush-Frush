@@ -33,6 +33,17 @@ const Board: React.FC<BoardProps> = ({
   const [objective, setObjective] = useState<{[key: string]: number}>({});
   const [isAnimating, setIsAnimating] = useState(false);
   const boardRef = useRef<HTMLDivElement>(null);
+  const [matchedCandies, setMatchedCandies] = useState<[number, number][]>([]);
+
+  useEffect(() => {
+    const candyTypes = ['R', 'B', 'G', 'Y', 'P'];
+    candyTypes.forEach(type => {
+      const img = new Image();
+      img.src = `/${type.toLowerCase()}.png`;
+    });
+  }, []);
+
+  
 
   useEffect(() => {
     const newBoard = generateBoard(8, 8);
@@ -63,6 +74,9 @@ const Board: React.FC<BoardProps> = ({
             let points = matches.length;
             onScoreUpdate(points);
 
+            setMatchedCandies(matches);
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             matches.forEach(([r, c]) => {
               if (objective[newBoard[r][c]] > 0) {
                 objective[newBoard[r][c]]--;
@@ -77,6 +91,7 @@ const Board: React.FC<BoardProps> = ({
             setBoard([...newBoard]);
             await new Promise(resolve => setTimeout(resolve, 300));
 
+            setMatchedCandies([]);
             matches = checkMatches(newBoard);
           }
 
@@ -148,14 +163,18 @@ const Board: React.FC<BoardProps> = ({
               <motion.div
                 key={`${rowIndex}-${colIndex}`}
                 initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+                animate={{ 
+                  scale: 1,
+                  rotate: matchedCandies.some(([r, c]) => r === rowIndex && c === colIndex) ? 360 : 0,
+                }}
                 exit={{ scale: 0 }}
                 transition={{ duration: 0.2 }}
               >
                 <Candy
                   type={candy}
                   onMouseDown={() => handleMouseDown(rowIndex, colIndex)}
-                  isSelected={selected && selected[0] === rowIndex && selected[1] === colIndex}
+                  isSelected={Boolean(selected && selected[0] === rowIndex && selected[1] === colIndex)}
+                  isMatched={matchedCandies.some(([r, c]) => r === rowIndex && c === colIndex)}
                 />
               </motion.div>
             ))
