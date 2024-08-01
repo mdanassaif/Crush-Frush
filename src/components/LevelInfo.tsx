@@ -8,7 +8,7 @@ const LevelInfo: React.FC<LevelInfoProps> = ({ level, objective }) => {
     <div className="mb-4 text-2xl font-bold text-center">
       <h2 className="text-3xl mb-2">Level {level}</h2>
       <div className="text-xl">
-        Objective:
+        
         {Object.entries(objective).map(([color, count]) => (
           <span key={color} className="ml-2">
             {color}: {count}

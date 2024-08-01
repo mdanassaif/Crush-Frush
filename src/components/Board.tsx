@@ -43,8 +43,6 @@ const Board: React.FC<BoardProps> = ({
     });
   }, []);
 
-  
-
   useEffect(() => {
     const newBoard = generateBoard(8, 8);
     setBoard(newBoard);
