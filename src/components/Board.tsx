@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Candy from './Candy';
 import Modal from './Modal';
-import { generateBoard, checkMatches, applyGravity, swapCandies } from '../utils/gameLogic';
+import { generateBoard, checkMatches, applyGravity, swapCandies, findPossibleMoves } from '../utils/gameLogic';
 import { levels } from '../utils/levelData';
 
 interface BoardProps {
@@ -35,13 +35,14 @@ const Board: React.FC<BoardProps> = ({
   const boardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setBoard(generateBoard(8, 8));
+    const newBoard = generateBoard(8, 8);
+    setBoard(newBoard);
     setObjective(levels[level - 1].objective as { [key: string]: number });
   }, [level]);
 
   const handleCandyInteraction = async (row: number, col: number) => {
     if (isAnimating) return;
-  
+
     if (!selected) {
       setSelected([row, col]);
     } else {
@@ -53,34 +54,32 @@ const Board: React.FC<BoardProps> = ({
         setIsAnimating(true);
         let newBoard = swapCandies(board, selectedRow, selectedCol, row, col);
         setBoard(newBoard);
-  
-        // Wait for the swap animation
+
         await new Promise(resolve => setTimeout(resolve, 300));
-  
+
         let matches = checkMatches(newBoard);
         if (matches.length > 0) {
-          // Valid move
           while (matches.length > 0) {
             let points = matches.length;
             onScoreUpdate(points);
-  
+
             matches.forEach(([r, c]) => {
               if (objective[newBoard[r][c]] > 0) {
                 objective[newBoard[r][c]]--;
               }
               newBoard[r][c] = '';
             });
-  
+
             setBoard([...newBoard]);
             await new Promise(resolve => setTimeout(resolve, 300));
-  
+
             newBoard = applyGravity(newBoard);
             setBoard([...newBoard]);
             await new Promise(resolve => setTimeout(resolve, 300));
-  
+
             matches = checkMatches(newBoard);
           }
-  
+
           setObjective({...objective});
           
           if (Object.values(objective).every(v => v === 0)) {
@@ -88,39 +87,25 @@ const Board: React.FC<BoardProps> = ({
           }
           onMove();
         } else {
-          // Invalid move, swap back
-          console.log("Invalid move, swapping back");
           newBoard = swapCandies(newBoard, row, col, selectedRow, selectedCol);
           setBoard(newBoard);
           await new Promise(resolve => setTimeout(resolve, 300));
         }
         
         setIsAnimating(false);
-      } else {
-        // If the second click is not adjacent, treat it as a new selection
-        setSelected([row, col]);
       }
+      setSelected(null);
     }
-    setSelected(null);
+  };
+
+  const handleMouseDown = (row: number, col: number) => {
+    handleCandyInteraction(row, col);
   };
 
   const handleTouchStart = (event: React.TouchEvent) => {
     const touch = event.touches[0];
-    const { clientX, clientY } = touch;
-    const { row, col } = getTouchedCandy(clientX, clientY);
+    const { row, col } = getTouchedCandy(touch.clientX, touch.clientY);
     if (row !== -1 && col !== -1) {
-      handleCandyInteraction(row, col);
-    }
-  };
-
-  const handleTouchMove = (event: React.TouchEvent) => {
-    if (!selected) return;
-    
-    const touch = event.touches[0];
-    const { clientX, clientY } = touch;
-    const { row, col } = getTouchedCandy(clientX, clientY);
-    
-    if (row !== -1 && col !== -1 && (row !== selected[0] || col !== selected[1])) {
       handleCandyInteraction(row, col);
     }
   };
@@ -149,9 +134,13 @@ const Board: React.FC<BoardProps> = ({
     <>
       <div 
         ref={boardRef}
-        className="grid grid-cols-8 gap-1 p-4 bg-blue-200 rounded-lg shadow-inner"
+        className="grid grid-cols-8 gap-1 p-2 bg-pink-100 rounded-lg shadow-inner max-w-md mx-auto"
+        style={{
+          backgroundImage: "url('/board-background.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
         onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
       >
         <AnimatePresence>
           {board.map((row, rowIndex) =>
@@ -165,7 +154,7 @@ const Board: React.FC<BoardProps> = ({
               >
                 <Candy
                   type={candy}
-                  onClick={() => handleCandyInteraction(rowIndex, colIndex)}
+                  onMouseDown={() => handleMouseDown(rowIndex, colIndex)}
                   isSelected={selected && selected[0] === rowIndex && selected[1] === colIndex}
                 />
               </motion.div>
@@ -177,16 +166,8 @@ const Board: React.FC<BoardProps> = ({
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         type={modalType}
-        onNextLevel={() => {
-          onNextLevel();
-          setShowModal(false);
-        }}
-        onRetry={() => {
-          onRetry();
-          setBoard(generateBoard(8, 8));
-          setObjective(levels[level - 1].objective as { [key: string]: number });
-          setShowModal(false);
-        }}
+        onNextLevel={onNextLevel}
+        onRetry={onRetry}
       />
     </>
   );

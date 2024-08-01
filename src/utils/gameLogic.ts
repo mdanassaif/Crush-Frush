@@ -63,9 +63,35 @@ export const applyGravity = (board: string[][]): string[][] => {
 
 
 
+// ... (keep the existing functions)
 
 export const swapCandies = (board: string[][], row1: number, col1: number, row2: number, col2: number): string[][] => {
   const newBoard = board.map(row => [...row]);
   [newBoard[row1][col1], newBoard[row2][col2]] = [newBoard[row2][col2], newBoard[row1][col1]];
   return newBoard;
+};
+
+export const findPossibleMoves = (board: string[][]): [number, number, number, number][] => {
+  const moves: [number, number, number, number][] = [];
+
+  for (let row = 0; row < board.length; row++) {
+    for (let col = 0; col < board[row].length; col++) {
+      // Check horizontal swap
+      if (col < board[row].length - 1) {
+        const swappedBoard = swapCandies(board, row, col, row, col + 1);
+        if (checkMatches(swappedBoard).length > 0) {
+          moves.push([row, col, row, col + 1]);
+        }
+      }
+      // Check vertical swap
+      if (row < board.length - 1) {
+        const swappedBoard = swapCandies(board, row, col, row + 1, col);
+        if (checkMatches(swappedBoard).length > 0) {
+          moves.push([row, col, row + 1, col]);
+        }
+      }
+    }
+  }
+
+  return moves;
 };

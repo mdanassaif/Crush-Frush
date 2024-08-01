@@ -39,9 +39,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-purple-400 to-pink-500">
-      <h1 className="text-6xl font-bold mb-8 text-white shadow-lg">Candy Crush Clone</h1>
-      <div className="bg-white rounded-lg p-8 shadow-2xl">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-purple-400 to-pink-500 p-4">
+      <h1 className="text-4xl md:text-6xl font-bold mb-8 text-white ">Crush Frush</h1>
+      <div className="bg-white rounded-lg p-4 shadow-2xl max-w-md w-full">
         <LevelInfo level={currentLevel} objective={levels[currentLevel - 1].objective as { [key: string]: number }} />
         <ScoreBoard score={score} movesLeft={movesLeft} />
         <Board 
