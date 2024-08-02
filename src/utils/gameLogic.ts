@@ -8,7 +8,7 @@ export const generateBoard = (rows: number, cols: number): string[][] => {
 export const checkMatches = (board: string[][]): [number, number][] => {
   const matches: [number, number][] = [];
 
-  // Check horizontal matches
+  // Check horizontal algo
   for (let row = 0; row < board.length; row++) {
     for (let col = 0; col < board[row].length - 2; col++) {
       if (
@@ -21,7 +21,7 @@ export const checkMatches = (board: string[][]): [number, number][] => {
     }
   }
 
-  // Check vertical matches
+  // Check vertical algo
   for (let row = 0; row < board.length - 2; row++) {
     for (let col = 0; col < board[row].length; col++) {
       if (

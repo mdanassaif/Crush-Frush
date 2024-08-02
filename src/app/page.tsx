@@ -31,7 +31,6 @@ export default function Home() {
     if (movesLeft > 0) {
       setMovesLeft(movesLeft - 1);
       if (movesLeft === 1) {
-        // This was the last move
         setModalType('failed');
         setShowModal(true);
       }
